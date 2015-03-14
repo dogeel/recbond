@@ -1,0 +1,253 @@
+diff -u old/BonDriver_DVB.cpp ./BonDriver_DVB.cpp
+--- old/BonDriver_DVB.cpp	2015-02-06 02:05:56.000000000 +0900
++++ ./BonDriver_DVB.cpp	2015-03-05 09:29:38.000000000 +0900
+@@ -177,8 +177,7 @@
+ 					}
+ 					g_stChannels[idx][dw].freq.frequencyno = ::atoi(cp[2]);
+ 					g_stChannels[idx][dw].freq.tsid = ::strtoul(cp[3], NULL, 16);
+-					if (g_UseServiceID)
+-						g_stChannels[idx][dw].ServiceID = ::strtoul(cp[4], NULL, 10);
++					g_stChannels[idx][dw].ServiceID = ::strtoul(cp[4], NULL, 10);
+ 					g_stChannels[idx][dw].bUnused = FALSE;
+ 				}
+ 			}
+@@ -190,6 +189,99 @@
+ 	return 0;
+ }
+ 
++#include "AribChannel.h"
++
++// linux環境下で標準的なチャンネル指定を仮変換したものをBonDriverチャンネル番号へ変換
++const DWORD TransChannelAribToBon(const DWORD dwChannelSrc)
++{
++	DWORD dwChannel = dwChannelSrc & 0xFFFFU;
++	DWORD tsid,node,slot;
++	DWORD lp;
++
++	switch(dwChannelSrc>>16)
++	{
++	case BON_CHANNEL:
++		return dwChannel;
++	case ARIB_GROUND:
++	case ARIB_CATV:
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[0][lp].bUnused && g_stChannels[0][lp].freq.frequencyno == (int)dwChannel)
++				return lp;
++		}
++		break;
++	case ARIB_BS:
++		// g_stChannelsから探査
++		tsid = dwChannel;
++		node = (tsid & 0x01f0U) >> 4;
++		slot = tsid & 0x0007U;
++		if (node == 15)
++			tsid++;
++		for (lp = 0; lp<MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && (g_stChannels[1][lp].freq.tsid & 0xf1ffU) == tsid)
++				return lp;
++		}
++		// 新規追加
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (g_stChannels[1][lp].bUnused)
++			{
++				::sprintf(g_stChannels[1][lp].strChName, "BS%i_%i", node, slot);
++				g_stChannels[1][lp].freq.frequencyno = node / 2;
++				g_stChannels[1][lp].freq.tsid = tsid;
++				g_stChannels[1][lp].bUnused = FALSE;
++				return lp;
++			}
++		}
++		break;
++	case ARIB_BS_SID:
++		// BS sid指定(あくまでチャンネル指定でありTS分離指示は別)
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && (g_stChannels[1][lp].freq.tsid & 0xf000U) == 0x4000U && g_stChannels[1][lp].ServiceID == dwChannel)
++				return lp;
++		}
++		break;
++	case ARIB_CS:
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && g_stChannels[1][lp].freq.frequencyno == (int)dwChannel)
++				return lp;
++		}
++		break;
++	case ARIB_TSID:
++		tsid = dwChannel;
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && g_stChannels[1][lp].freq.tsid == tsid)
++				return lp;
++		}
++		// 新規追加
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (g_stChannels[1][lp].bUnused)
++			{
++				node = (tsid & 0x01f0U) >> 4;
++				if ((tsid & 0xf000U) == 0x4000U)
++					g_stChannels[1][lp].freq.frequencyno = node / 2;		// BS
++				else
++			 		g_stChannels[1][lp].freq.frequencyno = node / 2 + 11;	// CS
++				::sprintf(g_stChannels[1][lp].strChName, "0x%X", tsid);
++				g_stChannels[1][lp].freq.tsid = tsid;
++				g_stChannels[1][lp].bUnused = FALSE;
++				return lp;
++			}
++		}
++		break;
++	}
++	return ARIB_CH_ERROR;
++}
++
+ static float CalcCNR_S(uint16_t signal)
+ {
+ 	static const float fCnrTable[] = {
+@@ -557,8 +649,9 @@
+ #define DTV_STREAM_ID		DTV_ISDBS_TS_ID
+ #endif
+ 
+-const BOOL cBonDriverDVB::SetChannel(const DWORD dwSpace, const DWORD dwChannel)
++const BOOL cBonDriverDVB::SetChannel(const DWORD dwSpace, const DWORD dwChannelSrc)
+ {
++	DWORD dwChannel = TransChannelAribToBon(dwChannelSrc);
+ 	BOOL bFlag;
+ 	if (!m_bTuner)
+ 		goto err;
+diff -u old/BonDriver_LinuxPT.cpp ./BonDriver_LinuxPT.cpp
+--- old/BonDriver_LinuxPT.cpp	2015-02-06 02:05:56.000000000 +0900
++++ ./BonDriver_LinuxPT.cpp	2015-03-05 09:30:14.000000000 +0900
+@@ -203,8 +203,7 @@
+ 					}
+ 					g_stChannels[idx][dw].freq.frequencyno = ::atoi(cp[2]);
+ 					g_stChannels[idx][dw].freq.slot = ::atoi(cp[3]);
+-					if (g_UseServiceID)
+-						g_stChannels[idx][dw].ServiceID = ::strtoul(cp[4], NULL, 10);
++					g_stChannels[idx][dw].ServiceID = ::strtoul(cp[4], NULL, 10);
+ 					g_stChannels[idx][dw].bUnused = FALSE;
+ 				}
+ 			}
+@@ -216,6 +215,104 @@
+ 	return 0;
+ }
+ 
++#include "AribChannel.h"
++
++// linux環境下で標準的なチャンネル指定を仮変換したものをBonDriverチャンネル番号へ変換
++DWORD TransChannelAribToBon(const DWORD dwChannelSrc)
++{
++	DWORD dwChannel = dwChannelSrc & 0xFFFFU;
++	DWORD tsid,node,slot,freqno;
++	DWORD lp;
++
++	switch(dwChannelSrc>>16)
++	{
++	case BON_CHANNEL:
++		return dwChannel;
++	case ARIB_GROUND:
++	case ARIB_CATV:
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[0][lp].bUnused && g_stChannels[0][lp].freq.frequencyno == (int)dwChannel)
++				return lp;
++		}
++		break;
++	case ARIB_BS:
++		// g_stChannelsから探査
++		tsid = dwChannel;
++		node = (tsid & 0x01f0U) >> 4;
++		slot = tsid & 0x0007U;
++		freqno = node / 2;
++		for (lp = 0; lp<MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && g_stChannels[1][lp].freq.frequencyno == (int)freqno && g_stChannels[1][lp].freq.slot == (int)slot)
++				return lp;
++		}
++		// 新規追加
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (g_stChannels[1][lp].bUnused)
++			{
++				::sprintf(g_stChannels[1][lp].strChName, "BS%i_%i", node, slot);
++				g_stChannels[1][lp].freq.frequencyno = freqno;
++				g_stChannels[1][lp].freq.slot = slot;
++				g_stChannels[1][lp].bUnused = FALSE;
++				return lp;
++			}
++		}
++		break;
++	case ARIB_BS_SID:
++		// BS sid指定(あくまでチャンネル指定でありTS分離指示は別)
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && g_stChannels[1][lp].freq.frequencyno <= 11 && g_stChannels[1][lp].ServiceID == dwChannel)
++				return lp;
++		}
++		break;
++	case ARIB_CS:
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && g_stChannels[1][lp].freq.frequencyno == (int)dwChannel)
++				return lp;
++		}
++		break;
++	case ARIB_TSID:
++		tsid = dwChannel;
++		node = (tsid & 0x01f0U) >> 4;
++		slot = tsid & 0x0007U;
++		if ((tsid & 0xf000U) == 0x4000U)
++		{
++			if (node == 15)
++				slot--;
++			freqno = node / 2;
++		}
++		else
++			freqno = node / 2 + 11;
++		// g_stChannelsから探査
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (!g_stChannels[1][lp].bUnused && g_stChannels[1][lp].freq.frequencyno == (int)freqno && g_stChannels[1][lp].freq.slot == (int)slot)
++				return lp;
++		}
++		// 新規追加
++		for (lp = 0; lp < MAX_CH; lp++)
++		{
++			if (g_stChannels[1][lp].bUnused)
++			{
++				::sprintf(g_stChannels[1][lp].strChName, "0x%X", tsid);
++				g_stChannels[1][lp].freq.frequencyno = freqno;
++				g_stChannels[1][lp].freq.slot = slot;
++				g_stChannels[1][lp].bUnused = FALSE;
++				return lp;
++			}
++		}
++		break;
++	}
++	return ARIB_CH_ERROR;
++}
++
+ static float CalcCNR_S(int signal)
+ {
+ 	static const float fCnrTable[] = {
+@@ -449,8 +546,9 @@
+ 	return (LPCTSTR)(g_stChannels[g_Type][dwChannel].strChName);
+ }
+ 
+-const BOOL cBonDriverLinuxPT::SetChannel(const DWORD dwSpace, const DWORD dwChannel)
++const BOOL cBonDriverLinuxPT::SetChannel(const DWORD dwSpace, const DWORD dwChannelSrc)
+ {
++	DWORD dwChannel = TransChannelAribToBon(dwChannelSrc);
+ 	BOOL bFlag;
+ 	if (!m_bTuner)
+ 		goto err;
