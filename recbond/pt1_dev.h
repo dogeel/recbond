@@ -6,40 +6,32 @@
 // BonDriverテーブル(pathは各自で変更すること)
 // 衛星波
 char * bsdev[] = {
-	{
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S0.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S1.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S2.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S3.so"
-	}
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S0.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S1.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S2.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S3.so"
 };
 // Proxy
 char * bsdev_proxy[] = {
-	{
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS0.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS1.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS2.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS3.so"
-	}
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS0.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS1.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS2.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS3.so"
 };
 
 // 地上波
 char * isdb_t_dev[] = {
-	{
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T0.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T1.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T2.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T3.so"
-	}
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T0.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T1.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T2.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T3.so"
 };
 // Proxy
 char * isdb_t_dev_proxy[] = {
-	{
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT0.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT1.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT2.so",
-		(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT3.so"
-	}
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT0.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT1.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT2.so",
+	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT3.so"
 };
 
 #define NUM_BSDEV				(sizeof(bsdev)/sizeof(char *))
