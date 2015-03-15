@@ -415,6 +415,13 @@ OPEN_TUNER:;
 			free(table_tmp);
 			return 1;
 		}
+#if 0
+		DWORD m_dwChannel = tdata->pIBon2->GetCurChannel();
+		if(m_dwChannel != ARIB_CH_ERROR && m_dwChannel != dwSendBonNum){
+			fprintf(stderr, "Tuner has been used: %s\n", driver);
+			goto err;
+		}
+#endif
 		/* tune to specified channel */
 		while(tdata->pIBon2->SetChannel(tdata->dwSpace, dwSendBonNum) == FALSE) {
 			if(tdata->tune_persistent) {
