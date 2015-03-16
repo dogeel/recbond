@@ -1,7 +1,6 @@
-diff -u old/BonDriver_DVB.cpp ./BonDriver_DVB.cpp
---- old/BonDriver_DVB.cpp	2015-02-06 02:05:56.000000000 +0900
-+++ ./BonDriver_DVB.cpp	2015-03-05 09:29:38.000000000 +0900
-@@ -177,8 +177,7 @@
+--- old/BonDriver_DVB.cpp	2015-03-13 01:43:30.930590954 +0900
++++ new/BonDriver_DVB.cpp	2015-03-16 22:07:30.619739932 +0900
+@@ -222,8 +222,7 @@
  					}
  					g_stChannels[idx][dw].freq.frequencyno = ::atoi(cp[2]);
  					g_stChannels[idx][dw].freq.tsid = ::strtoul(cp[3], NULL, 16);
@@ -11,11 +10,11 @@ diff -u old/BonDriver_DVB.cpp ./BonDriver_DVB.cpp
  					g_stChannels[idx][dw].bUnused = FALSE;
  				}
  			}
-@@ -190,6 +189,99 @@
+@@ -235,6 +234,99 @@
  	return 0;
  }
  
-+#include "AribChannel.h"
++#include "recbond/AribChannel.h"
 +
 +// linux環境下で標準的なチャンネル指定を仮変換したものをBonDriverチャンネル番号へ変換
 +const DWORD TransChannelAribToBon(const DWORD dwChannelSrc)
@@ -111,7 +110,7 @@ diff -u old/BonDriver_DVB.cpp ./BonDriver_DVB.cpp
  static float CalcCNR_S(uint16_t signal)
  {
  	static const float fCnrTable[] = {
-@@ -557,8 +649,9 @@
+@@ -625,8 +717,9 @@
  #define DTV_STREAM_ID		DTV_ISDBS_TS_ID
  #endif
  
@@ -122,10 +121,9 @@ diff -u old/BonDriver_DVB.cpp ./BonDriver_DVB.cpp
  	BOOL bFlag;
  	if (!m_bTuner)
  		goto err;
-diff -u old/BonDriver_LinuxPT.cpp ./BonDriver_LinuxPT.cpp
---- old/BonDriver_LinuxPT.cpp	2015-02-06 02:05:56.000000000 +0900
-+++ ./BonDriver_LinuxPT.cpp	2015-03-05 09:30:14.000000000 +0900
-@@ -203,8 +203,7 @@
+--- old/BonDriver_LinuxPT.cpp	2015-03-13 01:43:30.930590954 +0900
++++ new/BonDriver_LinuxPT.cpp	2015-03-16 22:07:54.751039786 +0900
+@@ -241,8 +241,7 @@
  					}
  					g_stChannels[idx][dw].freq.frequencyno = ::atoi(cp[2]);
  					g_stChannels[idx][dw].freq.slot = ::atoi(cp[3]);
@@ -135,11 +133,11 @@ diff -u old/BonDriver_LinuxPT.cpp ./BonDriver_LinuxPT.cpp
  					g_stChannels[idx][dw].bUnused = FALSE;
  				}
  			}
-@@ -216,6 +215,104 @@
+@@ -254,6 +253,104 @@
  	return 0;
  }
  
-+#include "AribChannel.h"
++#include "recbond/AribChannel.h"
 +
 +// linux環境下で標準的なチャンネル指定を仮変換したものをBonDriverチャンネル番号へ変換
 +DWORD TransChannelAribToBon(const DWORD dwChannelSrc)
@@ -240,7 +238,7 @@ diff -u old/BonDriver_LinuxPT.cpp ./BonDriver_LinuxPT.cpp
  static float CalcCNR_S(int signal)
  {
  	static const float fCnrTable[] = {
-@@ -449,8 +546,9 @@
+@@ -509,8 +606,9 @@
  	return (LPCTSTR)(g_stChannels[g_Type][dwChannel].strChName);
  }
  
