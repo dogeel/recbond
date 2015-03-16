@@ -27,6 +27,10 @@ OBJS3 = checksignal.o recpt1core.o
 OBJALL = $(OBJS) $(OBJS2) $(OBJS3)
 DEPEND = .deps
 
+ifdef EXTRA_SID
+CPPFLAGS += -DENABLE_EXTRA_SID
+endif
+
 all: $(TARGETS)
 
 clean:

@@ -383,7 +383,7 @@ int split_ts(
 	return result;
 }
 
-#if ENABLE_EXTRA_SID
+#ifdef ENABLE_EXTRA_SID
 int		caption;
 int		es_test;
 #endif
@@ -428,7 +428,7 @@ static int AnalyzePat(Splitter *sp, unsigned char *buf)
 		sp->pmt_retain = 0;
 		memset(pos, 0, sizeof(pos));
 		size = buf[7];
-#if ENABLE_EXTRA_SID
+#ifdef ENABLE_EXTRA_SID
 		caption = FALSE;		// 字幕PID保存フラグ初期化
 		es_test = FALSE;
 #endif
@@ -550,7 +550,7 @@ static int AnalyzePat(Splitter *sp, unsigned char *buf)
 //					*(pids+0x26) = 1;         // 車載用epg 規格のみで未送出のもよう
 					*(pids+0x27) = 1;
 				}
-#if ENABLE_EXTRA_SID
+#ifdef ENABLE_EXTRA_SID
 				else if(!strcasecmp(*p, "caption")) {
 					/* 字幕PID保存 ES PIDなのでフラグのみ変更 */
 					caption = TRUE;
@@ -763,7 +763,7 @@ static int AnalyzePmt(Splitter *sp, unsigned char *buf, unsigned char mark)
 	// ES PID
 	while (N <= Nall + payload_offset - 5)
 	{
-#if ENABLE_EXTRA_SID
+#ifdef ENABLE_EXTRA_SID
 		do{
 			if( buf[N] == 0x0d )
 				break;
