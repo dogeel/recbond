@@ -363,27 +363,28 @@ tune(char *channel, thread_data *tdata, char *driver)
 	}
 
 	/* open tuner */
-	if(driver) {
+	char *dri_tmp = driver;
+	int aera;
+	char **tuner;
+	int num_devs;
+	if(dri_tmp && *dri_tmp == 'P'){
+		// proxy
+		dri_tmp++;
+		aera = 1;
+	}else
+		aera = 0;
+	if(dri_tmp && *dri_tmp != '\0') {
 		/* case 1: specified tuner driver */
-		int aera,num_devs;
-		char **drv;
-		char *dri_tmp = driver;
 		int num = 0;
 		int code;
 
-		if(*dri_tmp == 'P'){
-			// proxy
-			dri_tmp++;
-			aera = 1;
-		}else
-			aera = 0;
 		if(*dri_tmp == 'S'){
 			if(table_tmp->type != CHTYPE_GROUND){
 				if(aera == 0){
-					drv = bsdev;
+					tuner = bsdev;
 					num_devs = NUM_BSDEV;
 				}else{
-					drv = bsdev_proxy;
+					tuner = bsdev_proxy;
 					num_devs = NUM_BSDEV_PROXY;
 				}
 			}else
@@ -391,10 +392,10 @@ tune(char *channel, thread_data *tdata, char *driver)
 		}else if(*dri_tmp == 'T'){
 			if(table_tmp->type != CHTYPE_SATELLITE){
 				if(aera == 0){
-					drv = isdb_t_dev;
+					tuner = isdb_t_dev;
 					num_devs = NUM_ISDB_T_DEV;
 				}else{
-					drv = isdb_t_dev_proxy;
+					tuner = isdb_t_dev_proxy;
 					num_devs = NUM_ISDB_T_DEV_PROXY;
 				}
 			}else
@@ -407,7 +408,7 @@ tune(char *channel, thread_data *tdata, char *driver)
 			num = num * 10 + *dri_tmp++ - '0';
 		}while(isdigit(*dri_tmp));
 		if(*dri_tmp == '\0' && num+1 <= num_devs)
-			driver = drv[num];
+			driver = tuner[num];
 OPEN_TUNER:;
 		if((code = open_tuner(tdata, driver))){
 			if(code == -4)
@@ -438,8 +439,6 @@ OPEN_TUNER:;
 	}
 	else {
 		/* case 2: loop around available devices */
-		char **tuner;
-		int num_devs;
 		int lp;
 
 		switch(table_tmp->type){
@@ -448,12 +447,22 @@ OPEN_TUNER:;
 				fprintf(stderr, "No driver name\n");
 				goto err;
 			case CHTYPE_SATELLITE:
-				tuner = bsdev;
-				num_devs = NUM_BSDEV;
+				if(aera == 0){
+					tuner = bsdev;
+					num_devs = NUM_BSDEV;
+				}else{
+					tuner = bsdev_proxy;
+					num_devs = NUM_BSDEV_PROXY;
+				}
 				break;
 			case CHTYPE_GROUND:
-				tuner = isdb_t_dev;
-				num_devs = NUM_ISDB_T_DEV;
+				if(aera == 0){
+					tuner = isdb_t_dev;
+					num_devs = NUM_ISDB_T_DEV;
+				}else{
+					tuner = isdb_t_dev_proxy;
+					num_devs = NUM_ISDB_T_DEV_PROXY;
+				}
 				break;
 		}
 
