@@ -11,7 +11,7 @@ char * bsdev[] = {
 	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S2.so",
 	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-S3.so"
 };
-// Proxy
+// 衛星波Proxy
 char * bsdev_proxy[] = {
 	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS0.so",
 	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyS1.so",
@@ -26,7 +26,7 @@ char * isdb_t_dev[] = {
 	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T2.so",
 	(char *)"/usr/local/lib/BonDriver/BonDriver_LinuxPT-T3.so"
 };
-// Proxy
+// 地上波Proxy
 char * isdb_t_dev_proxy[] = {
 	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT0.so",
 	(char *)"/usr/local/lib/BonDriver/BonDriver_ProxyT1.so",
@@ -66,13 +66,9 @@ const ISDB_T_FREQ_CONV_TABLE	isdb_t_conv_table[] = {
 	{  6, CHTYPE_SATELLITE, 1, (char *)"181"},	// BSフジ
 	{  7, CHTYPE_SATELLITE, 0, (char *)"101"},	// NHK-BS1
 	{  7, CHTYPE_SATELLITE, 1, (char *)"103"},	// NHK-BSプレミアム
-	{  8, CHTYPE_SATELLITE, 1, (char *)"294"},	// 難視聴(日テレ)
-	{  8, CHTYPE_SATELLITE, 1, (char *)"295"},	// 難視聴(テレ朝)
-	{  8, CHTYPE_SATELLITE, 1, (char *)"296"},	// 難視聴(TBS)
-	{  8, CHTYPE_SATELLITE, 1, (char *)"297"},	// 難視聴(テレ東)
-	{  8, CHTYPE_SATELLITE, 2, (char *)"291"},	// 難視聴(NHK総合)
-	{  8, CHTYPE_SATELLITE, 2, (char *)"292"},	// 難視聴(NHKEテレ)
-	{  8, CHTYPE_SATELLITE, 2, (char *)"298"},	// 難視聴(フジ)
+	{  8, CHTYPE_SATELLITE, 0, (char *)"291"},	// 旧難視聴1
+	{  8, CHTYPE_SATELLITE, 1, (char *)"292"},	// 旧難視聴2
+	{  8, CHTYPE_SATELLITE, 2, (char *)"293"},	// 旧難視聴3
 	{  9, CHTYPE_SATELLITE, 0, (char *)"234"},	// グリーンチャンネル
 	{  9, CHTYPE_SATELLITE, 1, (char *)"242"},	// J Sports 1
 	{  9, CHTYPE_SATELLITE, 2, (char *)"243"},	// J Sports 2

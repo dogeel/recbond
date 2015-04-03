@@ -50,7 +50,8 @@ extern BON_CHANNEL_SET *isdb_t_conv_set;
 
 //read 1st line from socket
 void read_line(int socket, char *p){
-	while (1){
+	int i;
+	for (i=0; i < 255; i++){
 		int ret;
 		ret = read(socket, p, 1);
 			if ( ret == -1 ){

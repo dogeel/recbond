@@ -83,7 +83,7 @@ DWORD channelAribToBon(char *channel)
 			return ARIB_CH_ERROR;
 		case 11:	// CS
 			if (*channel == '\0' && 2 <= node && node <= ISDB_T_NODE_LIMIT)
-				return (ARIB_CS << 16) | (node / 2 + 11);
+				return (ARIB_CS << 16) | node;
 			return ARIB_CH_ERROR;
 		case 10:	// CATV
 			if (*channel == '\0' && 13 <= node && node <= 63)

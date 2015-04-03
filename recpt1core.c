@@ -74,7 +74,7 @@ searchrecoff(char *channel)
 			free(isdb_t_conv_tmp);
 			return NULL;
 		case ARIB_CS:
-			node = (dwBonChannel & 0x01f0U) >> 4;
+			node = dwBonChannel & 0x00ffU;
 			isdb_t_conv_tmp->type = CHTYPE_SATELLITE;
 			sprintf(isdb_t_conv_tmp->parm_freq, "CS%d", node);
 			isdb_t_conv_tmp->bon_num = getBonNumber(node/2+11, 0);
@@ -90,7 +90,7 @@ searchrecoff(char *channel)
 				isdb_t_conv_tmp->bon_num = getBonNumber(node/2, slot);
 			}else{
 				sprintf(isdb_t_conv_tmp->parm_freq, "CS%d", node);
-				isdb_t_conv_tmp->bon_num = getBonNumber(node/2+2, 0);
+				isdb_t_conv_tmp->bon_num = getBonNumber(node/2+11, 0);
 			}
 			break;
 	}
@@ -467,51 +467,65 @@ OPEN_TUNER:;
 		}
 
 		for(lp = 0; lp < num_devs; lp++) {
-			int count = 0;
-
-			if(open_tuner(tdata, tuner[lp]) == 0){
-				// 使用中チェック・BSのCh比較は、局再編があると正しくない可能性がある
+			if(open_tuner(tdata, tuner[lp]) == 0) {
+				// 同CHチェック・BSのCh比較は、局再編があると正しくない可能性がある
 				DWORD m_dwChannel = tdata->pIBon2->GetCurChannel();
-				if(m_dwChannel != ARIB_CH_ERROR && m_dwChannel != dwSendBonNum){
+				if(m_dwChannel == dwSendBonNum)
+					goto SUCCESS_EXIT;
+				else{
 					close_tuner(tdata);
 					continue;
 				}
-				/* tune to specified channel */
-				if(tdata->tune_persistent) {
-					while(tdata->pIBon2->SetChannel(tdata->dwSpace, dwSendBonNum) == FALSE && count < MAX_RETRY) {
-						if(f_exit)
-							goto err;
-						fprintf(stderr, "No signal. Still trying: %s\n", tuner[lp]);
-						count++;
-					}
+			}
+		}
+		for(lp = 0; lp < num_devs; lp++) {
+			int count = 0;
 
-					if(count >= MAX_RETRY) {
+			if(open_tuner(tdata, tuner[lp]) == 0) {
+				// 使用中チェック・BSのCh比較は、局再編があると正しくない可能性がある
+				DWORD m_dwChannel = tdata->pIBon2->GetCurChannel();
+				if(m_dwChannel != ARIB_CH_ERROR){
+					if(m_dwChannel != dwSendBonNum){
 						close_tuner(tdata);
-						count = 0;
 						continue;
 					}
-				} /* tune_persistent */
-				else {
-					if(tdata->pIBon2->SetChannel(tdata->dwSpace, dwSendBonNum) == FALSE) {
-						close_tuner(tdata);
-						continue;
+				}else{
+					/* tune to specified channel */
+					if(tdata->tune_persistent) {
+						while(tdata->pIBon2->SetChannel(tdata->dwSpace, dwSendBonNum) == FALSE && count < MAX_RETRY) {
+							if(f_exit)
+								goto err;
+							fprintf(stderr, "No signal. Still trying: %s\n", tuner[lp]);
+							count++;
+						}
+
+						if(count >= MAX_RETRY) {
+							close_tuner(tdata);
+							count = 0;
+							continue;
+						}
+					} /* tune_persistent */
+					else {
+						if(tdata->pIBon2->SetChannel(tdata->dwSpace, dwSendBonNum) == FALSE) {
+							close_tuner(tdata);
+							continue;
+						}
 					}
 				}
 
-				if(tdata->tune_persistent)
-					fprintf(stderr, "driver = %s\n", tuner[lp]);
 				goto SUCCESS_EXIT; /* found suitable tuner */
 			}
 		}
 
 		/* all tuners cannot be used */
-		if(tdata->hModule == NULL) {
-			free(table_tmp);
-			fprintf(stderr, "Cannot tune to the specified channel\n");
-			return 1;
-		}
-	}
+		free(table_tmp);
+		fprintf(stderr, "Cannot tune to the specified channel\n");
+		return 1;
+
 SUCCESS_EXIT:
+		if(tdata->tune_persistent)
+			fprintf(stderr, "driver = %s\n", tuner[lp]);
+	}
 	tdata->table = table_tmp;
 	if(reqChannel)
 		table_tmp->bon_num = tdata->pIBon2->GetCurChannel();
